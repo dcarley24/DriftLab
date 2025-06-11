@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Drift Detail</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 960px;
+            margin: auto;
+        }
+        h1, h2 {
+            color: #222;
+        }
+        .section-box {
+            background: white;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: #f0f0f0;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            overflow-x: auto;
+        }
+        .drift-row {
+            border-bottom: 1px solid #ddd;
+            padding: 1rem 0;
+        }
+        .score-ok {
+            color: green;
+        }
+        .score-bad {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="section-box">
+        <h1>Prompt #{{ prompt_id }}</h1>
+        <p><strong>Original Prompt:</strong></p>
+        <pre>{{ prompt }}</pre>
+    </div>
+
+    <div class="section-box">
+        <h2>Drift Chain</h2>
+        {% for out in outputs %}
+            <div class="drift-row">
+                <strong>Step {{ out.step }}</strong> —
+                Drift Score:
+                <span class="{% if out.score < 0.4 %}score-bad{% else %}score-ok{% endif %}">{{ out.score }}</span>
+                {% if out.violation %}
+                    <span style="color: red;">🚫 Constraint Violated</span>
+                {% else %}
+                    <span style="color: green;">✅ Constraint OK</span>
+                {% endif %}
+                <pre>{{ out.text }}</pre>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if recoveries %}
+    <div class="section-box">
+        <h2>Recovery Attempts</h2>
+        {% for r in recoveries %}
+            <p><strong>Nudge:</strong> {{ r[0] }}</p>
+            <pre>{{ r[1] }}</pre>
+            <p><strong>Recovery Score:</strong>
+                {% if r[2] is not none %}
+                    <span class="{% if r[2] < 0.4 %}score-bad{% else %}score-ok{% endif %}">{{ r[2] }}</span>
+                {% else %}
+                    Not scored
+                {% endif %}
+            </p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+</body>
+</html>
